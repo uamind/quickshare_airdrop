@@ -9,6 +9,11 @@
 > 不改三星 App、不改 GMS、不 hook 代码；用的就是 Google 原版 APK 与其 privapp 白名单。
 > 详细逆向过程见 [docs/REVERSE_ENGINEERING.md](docs/REVERSE_ENGINEERING.md)。
 
+## 下载
+
+- 预打包模块（含 Google 原版 Mosey APK，仅供测试，请勿再分发）：[Releases](https://github.com/uamind/quickshare_airdrop/releases)
+- 只想自己构建：按下面「安装 A」用 `tools/prepare-payload.sh` + `tools/build.sh`。
+
 ## 免责声明
 
 - 与 Google、Samsung 无关，非官方项目。
