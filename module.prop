@@ -1,0 +1,6 @@
+id=quickshare_airdrop
+name=Quick Share AirDrop 解锁
+version=v1.0.2
+versionCode=102
+author=lead
+description=以系统应用方式安装 Google Quick Share Extension (com.google.android.mosey)，让三星 Quick Share 启用 AirDrop / 苹果设备发现（Google 官方仅限 Pixel 9/10）。APK 取自 Pixel 9 系统镜像原版，签名校验可通过 ShareLive 白名单。

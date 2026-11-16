@@ -1,0 +1,3 @@
+dist/
+system_ext/priv-app/MoseyApp/*.apk
+.DS_Store
