@@ -157,3 +157,31 @@ I ShareLive: [SLog][main][MainActivityViewModel] viewEffect: LaunchOnboardingTip
 - 真机对传（需要一台 iPhone）尚未验证；只验证到“发现通道已注册、provider 已启用”。
 - 三星 PAO 服务端策略若有 `policyPao.protocolXSupported=false`，本地无法绕过。
 - 不同机型 `system_ext` 的 SELinux 标签/挂载参数可能不同，需要按机型确认 overlay 是否生效。
+
+## 10. 固件依赖：Mosey 系统服务（关键限制）
+
+在 SM-S9180 上把链路打通后（ShareLive `isProtocolXAvailable=true`，GMS 日志出现
+`A new client has bound ... for calling package com.google.android.mosey` 与
+`External sharing provider has started discovery`），Mosey 进程初始化仍然失败：
+
+```
+I/Mosey.A: API: start() called with options: DiscoveryOptions(mode=1, ...)
+I/Mosey.A: Wakeup advertising started with settings: ...
+E/ServiceManager: error in isDeclared
+E/ServiceManager: java.lang.SecurityException: SELinux denied for service.
+I/Mosey.A: Mosey Lib is not available.
+E/Mosey.A: java.lang.IllegalStateException: Mosey service is not available.
+I/Mosey.A: Event received: InitializationFailed(cause=... Mosey service is not available.)
+```
+
+设备上确认：
+
+```
+$ su -c "service check Mosey"
+Service Mosey: not found
+$ service list | grep -iE "mosey|awdl"   # 无结果
+```
+
+结论：Mosey 只是一个客户端，它通过 binder 调用系统里的 `Mosey` 服务（Google 在 Pixel 固件中提供的 AWDL/射频实现）。
+One UI 既没有该 native 服务，也没有对应 `service_contexts`，因此模块/普通 App 无法补出；这属于固件能力差异，
+与 ShareLive 的开关无关。本模块能做到的边界就是「ShareLive 认账、扩展被 GMS 绑定并启动 discovery」。

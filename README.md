@@ -14,6 +14,32 @@
 - 预打包模块（含 Google 原版 Mosey APK，仅供测试，请勿再分发）：[Releases](https://github.com/uamind/quickshare_airdrop/releases)
 - 只想自己构建：按下面「安装 A」用 `tools/prepare-payload.sh` + `tools/build.sh`。
 
+## 重要：固件限制（2026-11 实测结论）
+
+在 SM-S9180（One UI 9 / Android 17）上把 ShareLive 侧全部打通（`protocolXSupport=true`、`isProtocolXAvailable=true`、
+GMS 也把 Mosey 当外部 provider 绑定并调用 `startDiscovery`）之后，Mosey 自己初始化失败：
+
+```
+I Mosey.A : API: start() called with options: DiscoveryOptions(...)
+I Mosey.A : Wakeup advertising started ...
+E ServiceManager: error in isDeclared
+E ServiceManager: java.lang.SecurityException: SELinux denied for service.
+I Mosey.A : Mosey Lib is not available.
+E Mosey.A : java.lang.IllegalStateException: Mosey service is not available.
+```
+
+```
+$ su -c "service check Mosey"
+Service Mosey: not found
+```
+
+也就是说 Google 的 AirDrop 实现依赖一个**系统级 native 服务 `Mosey`**（负责 AWDL/射频那层），它只存在于
+Pixel 9/10 的固件里；三星 One UI 没有这个服务，也没有对应的 SELinux service_context，第三方 App/模块无法补出来。
+这正是 Google 声明「compatibility supported only by Google」「仅 Pixel 9/10」的真正原因——不是 App 层开关，而是固件能力。
+
+因此本模块的作用边界是：**把 ShareLive 的 Protocol X 开关和 Mosey 扩展装好**；在带 `Mosey` 服务的固件上可直接工作，
+在没有该服务的机型（如 S23 Ultra）上，UI 会显示已支持但发现/传输会停在 `Mosey service is not available`。
+
 ## 免责声明
 
 - 与 Google、Samsung 无关，非官方项目。
