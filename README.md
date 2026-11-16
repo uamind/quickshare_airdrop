@@ -40,6 +40,21 @@ Pixel 9/10 的固件里；三星 One UI 没有这个服务，也没有对应的 
 因此本模块的作用边界是：**把 ShareLive 的 Protocol X 开关和 Mosey 扩展装好**；在带 `Mosey` 服务的固件上可直接工作，
 在没有该服务的机型（如 S23 Ultra）上，UI 会显示已支持但发现/传输会停在 `Mosey service is not available`。
 
+### 那能不能自己把 AWDL 那层写出来？（实测：不能）
+
+用 `nl80211` 直接问内核，S23 Ultra 的实测结果是：
+
+| 能力 | 结果 |
+| --- | --- |
+| 建 monitor/radiotap 接口（等价 Pixel 的 `wondertap0`） | ✅ 可以创建 |
+| Wi-Fi Aware / NAN（`wifi-aware0`） | ✅ 存在 |
+| 设置 monitor 接口信道（AWDL 跳频的前提） | ❌ `NL80211_CMD_SET_WIPHY` 返回 `-EBUSY` |
+
+`-EBUSY` 来自 `cfg80211_set_monitor_channel()`：只有「该 phy 上全是 monitor 接口」才允许设信道，而 Android 的
+`wlan0` 永远存在（关掉 Wi-Fi 也一样）。没有信道控制权就没有 AWDL 同步窗口，因此**靠 root/模块补不出 AirDrop**；
+Pixel 能做的原因是它的 Wi-Fi 驱动/固件给 `mosey_server` 留了厂商私有通道。完整过程、命令与输出见
+[docs/AWDL_FEASIBILITY.md](docs/AWDL_FEASIBILITY.md)，探针源码在 `tools/`（`nlprobe` / `rawtx` / `delif`）。
+
 ## 免责声明
 
 - 与 Google、Samsung 无关，非官方项目。
